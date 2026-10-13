@@ -1,0 +1,95 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="color-scheme" content="dark light">
+    <meta name="description" content="Import expense transactions from a CSV file.">
+    <title>Import Expenses &middot; Expense Tracker</title>
+    <link rel="stylesheet" href="{% static 'expenses/css/import.css' %}">
+    <script>
+        (function () {
+            var root = document.documentElement;
+            var theme = 'dark';
+            try {
+                var saved = localStorage.getItem('et-theme');
+                if (saved === 'light' || saved === 'dark') { theme = saved; }
+                else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) { theme = 'light'; }
+            } catch (error) { /* Fall back to dark if storage is unavailable. */ }
+            root.setAttribute('data-theme', theme);
+        })();
+    </script>
+</head>
+<body>
+    <a class="import-skip-link" href="#main-content">Skip to import form</a>
+
+    <main class="import-page" id="main-content">
+        <a class="import-brand" href="{% url 'transactions' %}" aria-label="Expense Tracker dashboard">
+            <span class="import-brand__mark" aria-hidden="true">₹</span>
+            <span>
+                <strong>Expense Tracker</strong>
+                <small>Transaction workspace</small>
+            </span>
+        </a>
+
+        <section class="import-card" aria-labelledby="import-title">
+            <div class="import-card__hero">
+                <span class="import-hero-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M12 20.5v-11M7.5 10 12 5.5l4.5 4.5M4.5 19.5h15"/></svg>
+                </span>
+                <div>
+                    <p class="import-eyebrow">CSV import</p>
+                    <h1 id="import-title">Import Expenses</h1>
+                    <p class="import-intro">Upload a CSV file to add validated transactions to your dashboard. Existing matching transactions are skipped automatically.</p>
+                </div>
+            </div>
+
+            {% if messages %}
+                <div class="import-messages" aria-label="Import status" aria-live="polite">
+                    {% for message in messages %}
+                        <p class="import-message import-message--{{ message.tags|default:'info' }}">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if error %}
+                <p class="import-message import-message--error" role="alert">{{ error }}</p>
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data" class="import-form">
+                {% csrf_token %}
+                <div class="import-upload">
+                    <input class="import-upload__input" type="file" id="csv_file" name="csv_file" accept=".csv,text/csv" aria-describedby="csv_file_help csv_file_name" required>
+                    <label class="import-upload__dropzone" for="csv_file">
+                        <span class="import-upload__icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><path d="M12 20.5v-11M7.5 10 12 5.5l4.5 4.5M4.5 19.5h15"/></svg>
+                        </span>
+                        <span class="import-upload__title">Choose a CSV file</span>
+                        <span class="import-upload__copy">Select a file from your device to begin.</span>
+                        <span class="import-upload__button">Select CSV file</span>
+                    </label>
+                    <p class="import-file-name" id="csv_file_name" aria-live="polite">No file selected</p>
+                    <p class="import-help" id="csv_file_help">CSV files only. Your file is validated before any transaction is added.</p>
+                </div>
+
+                <aside class="import-format" aria-labelledby="format-title">
+                    <h2 id="format-title">Expected columns</h2>
+                    <code>date, merchant, amount, payment_method, category, description</code>
+                    <p><strong>Required:</strong> date, merchant, amount, payment_method, and category. <strong>Optional:</strong> description.</p>
+                </aside>
+
+                <div class="import-actions">
+                    <button class="import-button import-button--primary" type="submit">
+                        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 20.5v-11M7.5 10 12 5.5l4.5 4.5M4.5 19.5h15"/></svg>
+                        Import CSV
+                    </button>
+                    <a class="import-button import-button--secondary" href="{% url 'transactions' %}">Back to Dashboard</a>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <script src="{% static 'expenses/js/import.js' %}" defer></script>
+</body>
+</html>

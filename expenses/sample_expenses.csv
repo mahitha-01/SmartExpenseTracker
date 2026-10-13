@@ -1,0 +1,6 @@
+
+date,merchant,amount,payment_method,category,description
+2026-10-03,Swiggy,450.00,UPI,FOOD,Dinner
+2026-10-04,DMart,1200.00,CREDIT_CARD,GROCERIES,Weekly groceries
+2026-10-05,Amazon,899.00,CREDIT_CARD,SHOPPING,Headphones
+2026-10-06,Metro,60.00,CASH,TRAVEL,Metro ticket

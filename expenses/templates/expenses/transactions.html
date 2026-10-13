@@ -1,0 +1,441 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<meta name="description" content="Responsive dashboard for tracking spending, categories and payment methods.">
+<title>Dashboard &middot; Expense Tracker</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='88'>&#8377;</text></svg>">
+<link rel="stylesheet" href="{% static 'expenses/css/dashboard.css' %}?v=transaction-actions-1">
+<script>
+/* Set theme before first paint so there is no flash of the wrong theme. */
+(function () {
+  var root = document.documentElement;
+  var theme = 'dark';
+  try {
+    var saved = localStorage.getItem('et-theme');
+    if (saved === 'light' || saved === 'dark') { theme = saved; }
+    else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) { theme = 'light'; }
+  } catch (e) { /* private mode: fall back to dark */ }
+  root.setAttribute('data-theme', theme);
+})();
+</script>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-grid" viewBox="0 0 24 24"><path d="M4 4.5h6v6H4zM14 4.5h6v6h-6zM4 13.5h6v6H4zM14 13.5h6v6h-6z"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 19.5h16M7 19.5V11M12 19.5V6M17 19.5v-5.5"/></symbol>
+  <symbol id="i-receipt" viewBox="0 0 24 24"><path d="M6 2.5h12v19l-3-1.8-3 1.8-3-1.8-3 1.8zM9.2 7.5h5.6M9.2 11.5h5.6M9.2 15.5h3.4"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.6"/><path d="M15.8 15.8L20 20"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.5 13.7A8.6 8.6 0 0110.3 3.5 8.7 8.7 0 1020.5 13.7z"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3.5v11M7.5 10.5L12 15l4.5-4.5M4.5 19.5h15"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 20.5v-11M7.5 10 12 5.5l4.5 4.5M4.5 19.5h15"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5.5v13M5.5 12h13"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M3.5 8.2a2.2 2.2 0 012.2-2.2h11.6a1.8 1.8 0 011.8 1.8v1.4M3.5 8.2v9.3a2.2 2.2 0 002.2 2.2h13.3a1.8 1.8 0 001.8-1.8v-2.2M20.5 13.5h-3.9a1.9 1.9 0 010 3.8h3.9v-3.8z"/></symbol>
+  <symbol id="i-trend" viewBox="0 0 24 24"><path d="M3.8 16.4l4.9-5 3.4 3.4 7.1-7.6M19.4 7.2h-4.6M19.4 7.2v4.6"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13.4 2.5L4.8 13.4h5.6l-1 8.1 8.8-11.1h-5.7z"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24"><path d="M3.4 12.6l8.9-8.9h8.3v8.3l-8.9 8.9-8.3-8.3z"/><circle cx="16.6" cy="7.4" r="1.4"/></symbol>
+  <symbol id="i-rupee" viewBox="0 0 24 24"><path d="M7 4.2h10M7 9h10M15.8 4.2c0 3.6-2 5.1-5.6 5.1H7l8.2 10.5"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.6l4.4 4.4L19 6.8"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="M14.5 5.5l-6.5 6.5 6.5 6.5"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="M9.5 5.5L16 12l-6.5 6.5"/></symbol>
+</svg>
+
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar" aria-label="Sections">
+    <div class="sidebar__head">
+      <a class="brand" href="#overview">
+        <span class="brand__mark" aria-hidden="true"><svg><use href="#i-rupee"></use></svg></span>
+        <span class="brand__text">
+          <strong>Expense</strong>
+          <small>Tracker</small>
+        </span>
+      </a>
+      <button class="icon-btn sidebar__close" id="navClose" type="button" aria-label="Close navigation">
+        <svg aria-hidden="true"><use href="#i-close"></use></svg>
+      </button>
+    </div>
+
+    <nav class="nav" aria-label="Dashboard sections">
+      <span class="nav__label">Menu</span>
+      <a class="nav__link is-active" href="#overview" aria-current="page" data-nav>
+        <svg aria-hidden="true"><use href="#i-grid"></use></svg>
+        <span>Overview</span>
+      </a>
+      <a class="nav__link" href="#analytics" data-nav>
+        <svg aria-hidden="true"><use href="#i-chart"></use></svg>
+        <span>Analytics</span>
+      </a>
+      <a class="nav__link" href="#transactions" data-nav>
+        <svg aria-hidden="true"><use href="#i-receipt"></use></svg>
+        <span>Transactions</span>
+        <span class="nav__count" id="navCount">0</span>
+      </a>
+    </nav>
+
+    <div class="sidebar__foot">
+      <strong>Local demo data</strong>
+      <span>Insights are calculated in your browser from the transactions queryset.</span>
+    </div>
+  </aside>
+
+  <div class="overlay" id="navOverlay" hidden></div>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn topbar__menu" id="navToggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="sidebar">
+        <svg aria-hidden="true"><use href="#i-menu"></use></svg>
+      </button>
+
+      <div class="topbar__search">
+        <svg aria-hidden="true"><use href="#i-search"></use></svg>
+        <label class="visually-hidden" for="globalSearch">Search transactions</label>
+        <input type="search" id="globalSearch" placeholder="Search merchant, category or note&hellip;" autocomplete="off" spellcheck="false">
+        <button class="search__clear" id="searchClear" type="button" aria-label="Clear search">
+          <svg aria-hidden="true"><use href="#i-close"></use></svg>
+        </button>
+        <span class="kbd" aria-hidden="true">/</span>
+      </div>
+
+      <div class="topbar__actions">
+        <button class="icon-btn" id="themeToggle" type="button" aria-label="Switch to light theme" title="Toggle theme">
+          <svg aria-hidden="true" class="icon-sun"><use href="#i-sun"></use></svg>
+          <svg aria-hidden="true" class="icon-moon"><use href="#i-moon"></use></svg>
+        </button>
+        <a class="btn btn--primary" href="{% url 'add_expense' %}">
+          <svg aria-hidden="true"><use href="#i-plus"></use></svg>
+          <span class="btn__label">Add Expense</span>
+        </a>
+        <a class="btn btn--secondary" href="{% url 'import_csv' %}" aria-label="Import Expenses">
+          <svg aria-hidden="true"><use href="#i-upload"></use></svg>
+          <span class="btn__label">Import Expenses</span>
+        </a>
+        <a class="btn btn--secondary" href="{% url 'upload_receipt' %}" aria-label="Upload Receipt">
+          <svg aria-hidden="true"><use href="#i-receipt"></use></svg>
+          <span class="btn__label">Upload Receipt</span>
+        </a>
+        <button class="btn btn--secondary" id="exportBtn" type="button" aria-label="Export CSV" title="Export CSV">
+          <svg aria-hidden="true"><use href="#i-download"></use></svg>
+          <span class="btn__label">Export CSV</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="content" id="main-content">
+      {% if messages %}
+        <section aria-label="Import status" role="status">
+          {% for message in messages %}
+            <p>{{ message }}</p>
+          {% endfor %}
+        </section>
+      {% endif %}
+
+      <section class="page-head" aria-labelledby="pageTitle">
+        <div>
+          <h1 id="pageTitle">Spending overview</h1>
+          <p id="pageSubtitle">A live summary of your latest transactions.</p>
+        </div>
+        <div class="page-head__meta">
+          <div class="segmented" id="rangeTabs" role="group" aria-label="Time range">
+            <button type="button" data-range="all" aria-pressed="true">All time</button>
+            <button type="button" data-range="month" aria-pressed="false">This month</button>
+            <button type="button" data-range="90d" aria-pressed="false">90 days</button>
+            <button type="button" data-range="year" aria-pressed="false">This year</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="kpi-grid" id="kpiGrid" aria-label="Key metrics">
+        <article class="kpi is-booting" style="--kpi-accent:#f97316;--kpi-glow:radial-gradient(closest-side,rgba(249,115,22,.20),transparent)">
+          <div class="kpi__top">
+            <span class="kpi__label">Total spend</span>
+            <span class="kpi__icon"><svg aria-hidden="true"><use href="#i-wallet"></use></svg></span>
+          </div>
+          <p class="kpi__value" id="kpiTotal">&mdash;</p>
+          <div class="kpi__foot">
+            <span class="kpi__hint" id="kpiTotalHint">Loading&hellip;</span>
+          </div>
+        </article>
+
+        <article class="kpi is-booting" style="--kpi-accent:#6366f1;--kpi-glow:radial-gradient(closest-side,rgba(99,102,241,.20),transparent)">
+          <div class="kpi__top">
+            <span class="kpi__label">Transactions</span>
+            <span class="kpi__icon"><svg aria-hidden="true"><use href="#i-receipt"></use></svg></span>
+          </div>
+          <p class="kpi__value" id="kpiCount">&mdash;</p>
+          <div class="kpi__foot">
+            <span class="kpi__hint" id="kpiCountHint">Loading&hellip;</span>
+          </div>
+        </article>
+
+        <article class="kpi is-booting" style="--kpi-accent:#22c55e;--kpi-glow:radial-gradient(closest-side,rgba(34,197,94,.20),transparent)">
+          <div class="kpi__top">
+            <span class="kpi__label">Average spend</span>
+            <span class="kpi__icon"><svg aria-hidden="true"><use href="#i-trend"></use></svg></span>
+          </div>
+          <p class="kpi__value" id="kpiAvg">&mdash;</p>
+          <div class="kpi__foot">
+            <span class="kpi__hint" id="kpiAvgHint">Loading&hellip;</span>
+          </div>
+        </article>
+
+        <article class="kpi is-booting" style="--kpi-accent:#22d3ee;--kpi-glow:radial-gradient(closest-side,rgba(34,211,238,.20),transparent)">
+          <div class="kpi__top">
+            <span class="kpi__label">Top category</span>
+            <span class="kpi__icon"><svg aria-hidden="true"><use href="#i-tag"></use></svg></span>
+          </div>
+          <p class="kpi__value kpi__value--sm" id="kpiTopCategory">&mdash;</p>
+          <div class="kpi__foot">
+            <span class="kpi__hint" id="kpiTopCategoryHint">Loading&hellip;</span>
+          </div>
+        </article>
+      </section>
+
+      <section class="grid-2" id="analytics">
+        <article class="panel">
+          <div class="panel__head">
+            <div>
+              <h2 class="panel__title">
+                <svg aria-hidden="true"><use href="#i-chart"></use></svg>
+                Spending by category
+              </h2>
+              <p class="panel__sub" id="catPanelSub">Share of total spend in the selected period</p>
+            </div>
+          </div>
+          <div class="chart-donut" id="donutWrap">
+            <svg id="donutChart" viewBox="0 0 120 120" role="img" aria-labelledby="donutTitle">
+              <title id="donutTitle">Donut chart of spending by category</title>
+              <circle class="donut-track" cx="60" cy="60" r="44"></circle>
+              <g id="donutSegments"></g>
+            </svg>
+            <div class="donut-center">
+              <span class="donut-center__label" id="donutLabel">Total</span>
+              <span class="donut-center__value" id="donutValue">&mdash;</span>
+            </div>
+          </div>
+          <div class="legend" id="catLegend" role="list" aria-label="Category breakdown"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel__head">
+            <div>
+              <h2 class="panel__title">
+                <svg aria-hidden="true"><use href="#i-bolt"></use></svg>
+                Monthly trend
+              </h2>
+              <p class="panel__sub" id="trendPanelSub">Total spend per month</p>
+            </div>
+          </div>
+          <div class="chart-bars" id="barsWrap">
+            <svg id="barsChart" viewBox="0 0 640 260" role="img" aria-labelledby="trendTitle">
+              <title id="trendTitle">Bar chart of monthly spend</title>
+              <defs>
+                <linearGradient id="barGrad" x1="0" y1="1" x2="0" y2="0">
+                  <stop offset="0%" stop-color="#6366f1"></stop>
+                  <stop offset="55%" stop-color="#8b5cf6"></stop>
+                  <stop offset="100%" stop-color="#22d3ee"></stop>
+                </linearGradient>
+              </defs>
+              <g class="bars-grid" id="barsGrid"></g>
+              <g id="barsGroup"></g>
+              <g id="barsAxis"></g>
+            </svg>
+            <div class="chart-tip" id="trendTip" role="status" aria-live="polite"></div>
+          </div>
+        </article>
+      </section>
+
+      <section class="grid-3" id="insights-row">
+        <article class="panel">
+          <div class="panel__head">
+            <div>
+              <h2 class="panel__title">
+                <svg aria-hidden="true"><use href="#i-wallet"></use></svg>
+                Payment methods
+              </h2>
+              <p class="panel__sub">Where the money went</p>
+            </div>
+          </div>
+          <div class="bar-list" id="methodList"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel__head">
+            <div>
+              <h2 class="panel__title">
+                <svg aria-hidden="true"><use href="#i-grid"></use></svg>
+                Top merchants
+              </h2>
+              <p class="panel__sub">Highest total spend per merchant</p>
+            </div>
+          </div>
+          <div class="bar-list" id="merchantList"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel__head">
+            <div>
+              <h2 class="panel__title">
+                <svg aria-hidden="true"><use href="#i-bolt"></use></svg>
+                Highlights
+              </h2>
+              <p class="panel__sub">Automatically derived from your data</p>
+            </div>
+          </div>
+          <div class="insights" id="insightList" aria-live="polite"></div>
+        </article>
+      </section>
+
+      <section class="panel" id="transactions" aria-labelledby="txTitle">
+        <div class="panel__head">
+          <div>
+            <h2 class="panel__title" id="txTitle">
+              <svg aria-hidden="true"><use href="#i-receipt"></use></svg>
+              Recent transactions
+            </h2>
+            <p class="panel__sub" id="txPanelSub">Newest activity first</p>
+          </div>
+          <span class="tag tag--brand" id="txFilterBadge" hidden>Filtered</span>
+        </div>
+
+        <div class="toolbar">
+          <label class="field" for="filterCategory">
+            <span class="visually-hidden">Filter by category</span>
+            <select id="filterCategory">
+              <option value="">All categories</option>
+            </select>
+          </label>
+          <label class="field" for="filterMethod">
+            <span class="visually-hidden">Filter by payment method</span>
+            <select id="filterMethod">
+              <option value="">All payment methods</option>
+            </select>
+          </label>
+          <label class="field" for="filterSource">
+            <span class="visually-hidden">Filter by source</span>
+            <select id="filterSource">
+              <option value="">All sources</option>
+            </select>
+          </label>
+          <button class="btn" id="resetFilters" type="button">
+            <svg aria-hidden="true"><use href="#i-close"></use></svg>
+            <span>Reset</span>
+          </button>
+          <span class="toolbar__spacer"></span>
+          <span class="toolbar__count" id="txCount" aria-live="polite">&mdash;</span>
+        </div>
+
+        <div class="table-wrap" id="tableWrap">
+          <table class="table" id="txTable">
+            <caption class="visually-hidden">All recorded transactions</caption>
+            <thead>
+              <tr>
+                <th scope="col" class="is-sortable" data-sort="merchant" aria-sort="none">Merchant<span class="sort-caret">&#9660;</span></th>
+                <th scope="col" class="is-sortable" data-sort="category" aria-sort="none">Category<span class="sort-caret">&#9660;</span></th>
+                <th scope="col" class="is-sortable" data-sort="payment_method" aria-sort="none">Payment<span class="sort-caret">&#9660;</span></th>
+                <th scope="col" class="is-sortable" data-sort="date" aria-sort="descending">Date<span class="sort-caret">&#9660;</span></th>
+                <th scope="col" class="is-sortable" data-sort="amount" aria-sort="none">Amount<span class="sort-caret">&#9660;</span></th>
+                <th scope="col" class="table__actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="txBody">
+              <tr>
+                <td colspan="6" style="text-align:center;padding:2rem;color:var(--text-dim)">
+                  Enable JavaScript to explore the interactive dashboard.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="empty" id="emptyState">
+          <span class="empty__icon"><svg aria-hidden="true"><use href="#i-search"></use></svg></span>
+          <h3>No transactions found</h3>
+          <p>Try a different search term or clear the active filters to see everything again.</p>
+        </div>
+
+        <div class="pagination">
+          <span class="pagination__info" id="pageInfo">&mdash;</span>
+          <div class="pagination__pages" id="pageButtons"></div>
+        </div>
+      </section>
+
+      <footer class="foot">
+        <span>Expense Tracker &middot; dashboard rendered from the <code>transactions</code> queryset.</span>
+        <span>Amounts shown in Indian Rupees (&#8377;).</span>
+      </footer>
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span class="toast__icon"><svg aria-hidden="true"><use href="#i-check"></use></svg></span>
+  <span id="toastMsg">Done</span>
+</div>
+
+{# The dashboard JavaScript uses this token in each dynamically rendered delete form. #}
+<div id="csrfToken" hidden>{% csrf_token %}</div>
+
+{# Data handed to the dashboard script. Values are escaped for JSON/JS context. #}
+<script id="txData" type="application/json">
+[
+{% for t in transactions %}
+  {
+    "id": {{ t.pk|default:0 }},
+    "date": "{{ t.date|date:'Y-m-d' }}",
+    "merchant": "{{ t.merchant|escapejs }}",
+    "amount": "{{ t.amount|stringformat:'s' }}",
+    "payment_method": "{{ t.payment_method|escapejs }}",
+    "category": "{{ t.category|escapejs }}",
+    "description": "{{ t.description|escapejs }}",
+    "source": "{{ t.source|escapejs }}",
+    "edit_url": "{% url 'edit_expense' t.pk %}",
+    "delete_url": "{% url 'delete_expense' t.pk %}"
+  }{% if not forloop.last %},{% endif %}
+{% endfor %}
+]
+</script>
+
+{% comment %}
+  Human-readable labels mirror Transaction.PAYMENT_METHODS / CATEGORIES / source
+  choices in expenses/models.py. Keep them in sync when the model choices change.
+{% endcomment %}
+<script id="txMeta" type="application/json">
+{
+  "categories": [
+    {"value": "FOOD", "label": "Food", "color": "#f97316"},
+    {"value": "GROCERIES", "label": "Groceries", "color": "#84cc16"},
+    {"value": "SHOPPING", "label": "Shopping", "color": "#ec4899"},
+    {"value": "TRAVEL", "label": "Travel", "color": "#0ea5e9"},
+    {"value": "EDUCATION", "label": "Education", "color": "#6366f1"},
+    {"value": "BILLS", "label": "Bills", "color": "#a855f7"},
+    {"value": "ENTERTAINMENT", "label": "Entertainment", "color": "#eab308"},
+    {"value": "HEALTHCARE", "label": "Healthcare", "color": "#14b8a6"},
+    {"value": "SUBSCRIPTIONS", "label": "Subscriptions", "color": "#f43f5e"},
+    {"value": "OTHER", "label": "Other", "color": "#94a3b8"}
+  ],
+  "paymentMethods": [
+    {"value": "UPI", "label": "UPI", "color": "#6366f1"},
+    {"value": "CREDIT_CARD", "label": "Credit Card", "color": "#8b5cf6"},
+    {"value": "DEBIT_CARD", "label": "Debit Card", "color": "#22d3ee"},
+    {"value": "BANK_TRANSFER", "label": "Bank Transfer", "color": "#22c55e"},
+    {"value": "CASH", "label": "Cash", "color": "#f59e0b"},
+    {"value": "OTHER", "label": "Other", "color": "#94a3b8"}
+  ],
+  "sources": [
+    {"value": "MANUAL", "label": "Manual"},
+    {"value": "BILL_SCAN", "label": "Bill Scan"},
+    {"value": "CSV", "label": "CSV Import"}
+  ]
+}
+</script>
+
+<script src="{% static 'expenses/js/dashboard.js' %}?v=transaction-actions-1" defer></script>
+</body>
+</html>

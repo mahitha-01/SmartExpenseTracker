@@ -1,0 +1,167 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="color-scheme" content="dark light">
+    <meta name="description" content="Upload a receipt image or PDF for an expense.">
+    <title>Upload Receipt &middot; Expense Tracker</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='88'>&#8377;</text></svg>">
+    <link rel="stylesheet" href="{% static 'expenses/css/import.css' %}?v=upload-receipt-1">
+    <script>
+        (function () {
+            var root = document.documentElement;
+            var theme = 'dark';
+            try {
+                var saved = localStorage.getItem('et-theme');
+                if (saved === 'light' || saved === 'dark') { theme = saved; }
+                else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) { theme = 'light'; }
+            } catch (error) { /* Fall back to dark if storage is unavailable. */ }
+            root.setAttribute('data-theme', theme);
+        })();
+    </script>
+</head>
+<body>
+    <a class="import-skip-link" href="#main-content">Skip to upload form</a>
+
+    <main class="import-page" id="main-content">
+        <a class="import-brand" href="{% url 'transactions' %}" aria-label="Expense Tracker dashboard">
+            <span class="import-brand__mark" aria-hidden="true">₹</span>
+            <span>
+                <strong>Expense Tracker</strong>
+                <small>Transaction workspace</small>
+            </span>
+        </a>
+
+        <section class="import-card" aria-labelledby="upload-title">
+            <div class="import-card__hero">
+                <span class="import-hero-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M6 2.5h12v19l-3-1.8-3 1.8-3-1.8-3 1.8zM9.2 7.5h5.6M9.2 11.5h5.6M9.2 15.5h3.4"/></svg>
+                </span>
+                <div>
+                    <p class="import-eyebrow">Receipt upload</p>
+                    <h1 id="upload-title">Upload Receipt</h1>
+                    <p class="import-intro">Upload a receipt photo or PDF. We check that the file is a genuine JPG, JPEG, PNG, or PDF before accepting it.</p>
+                </div>
+            </div>
+
+            {% if messages %}
+                <div class="import-messages" aria-label="Upload status" aria-live="polite">
+                    {% for message in messages %}
+                        <p class="import-message import-message--{{ message.tags|default:'info' }}">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if error %}
+                <p class="import-message import-message--error" role="alert">{{ error }}</p>
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data" class="import-form">
+                {% csrf_token %}
+                <div class="import-upload">
+                    <input class="import-upload__input" type="file" id="receipt_file" name="receipt_file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" aria-describedby="receipt_file_help receipt_file_name" required>
+                    <label class="import-upload__dropzone" for="receipt_file">
+                        <span class="import-upload__icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><path d="M12 20.5v-11M7.5 10 12 5.5l4.5 4.5M4.5 19.5h15"/></svg>
+                        </span>
+                        <span class="import-upload__title">Choose a receipt</span>
+                        <span class="import-upload__copy">Select a JPG, JPEG, PNG, or PDF file from your device.</span>
+                        <span class="import-upload__button">Select receipt file</span>
+                    </label>
+                    <p class="import-file-name" id="receipt_file_name" aria-live="polite">No file selected</p>
+                    <p class="import-help" id="receipt_file_help">JPG, JPEG, PNG, and PDF files only. We verify the real file type, not just the name, before accepting it.</p>
+                </div>
+
+                <aside class="import-format" aria-labelledby="format-title">
+                    <h2 id="format-title">Accepted files</h2>
+                    <code>JPG &middot; JPEG &middot; PNG &middot; PDF</code>
+                    <p>Empty files, unsupported extensions, and files whose contents do not match their extension are rejected.</p>
+                </aside>
+
+                <div class="import-actions">
+                    <button class="import-button import-button--primary" type="submit">
+                        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 20.5v-11M7.5 10 12 5.5l4.5 4.5M4.5 19.5h15"/></svg>
+                        Upload Receipt
+                    </button>
+                    <a class="import-button import-button--secondary" href="{% url 'transactions' %}">Back to Dashboard</a>
+                </div>
+            </form>
+            
+
+{% if uploaded_filename %}
+    <section class="import-format" aria-labelledby="ocr-results-title">
+        <h2 id="ocr-results-title">Review Receipt Details</h2>
+
+        <p>Check the extracted details and correct anything that is inaccurate.</p>
+
+        <form method="post" action="{% url 'review_receipt' %}" class="import-form">
+            {% csrf_token %}
+
+            <div class="import-field">
+                <label for="merchant">Merchant</label>
+                <input type="text" id="merchant" name="merchant"
+                       value="{{ extracted_merchant|default:'' }}" required>
+            </div>
+
+            <div class="import-field">
+                <label for="date">Transaction date</label>
+                <input type="date" id="date" name="date"
+                       value="{{ extracted_date|default:'' }}" required>
+            </div>
+
+            <div class="import-field">
+                <label for="amount">Total amount (₹)</label>
+                <input type="number" id="amount" name="amount"
+                       value="{{ extracted_amount|default:'' }}"
+                       min="0.01" step="0.01" required>
+            </div>
+
+            <div class="import-field">
+                <label for="payment_method">Payment method</label>
+            <select id="payment_method" name="payment_method" required>
+                <option value="UPI" {% if extracted_payment_method == 'UPI' %}selected{% endif %}>UPI</option>
+                <option value="CREDIT_CARD" {% if extracted_payment_method == 'CREDIT_CARD' %}selected{% endif %}>Credit card</option>
+                <option value="DEBIT_CARD" {% if extracted_payment_method == 'DEBIT_CARD' %}selected{% endif %}>Debit card</option>
+                <option value="BANK_TRANSFER" {% if extracted_payment_method == 'BANK_TRANSFER' %}selected{% endif %}>Bank transfer</option>
+                <option value="CASH" {% if extracted_payment_method == 'CASH' %}selected{% endif %}>Cash</option>
+                <option value="OTHER" {% if extracted_payment_method == 'OTHER' %}selected{% endif %}>Other</option>
+            </select>
+            </div>
+
+            <div class="import-field">
+                <label for="category">Category</label>
+                <select id="category" name="category" required>
+                    <option value="GROCERIES">Groceries</option>
+                    <option value="FOOD">Food</option>
+                    <option value="SHOPPING">Shopping</option>
+                    <option value="TRAVEL">Travel</option>
+                    <option value="EDUCATION">Education</option>
+                    <option value="BILLS">Bills</option>
+                    <option value="ENTERTAINMENT">Entertainment</option>
+                    <option value="HEALTHCARE">Healthcare</option>
+                    <option value="SUBSCRIPTIONS">Subscriptions</option>
+                    <option value="OTHER">Other</option>
+                </select>
+            </div>
+
+            <div class="import-field">
+                <label for="description">Description (optional)</label>
+                <textarea id="description" name="description" rows="3">{{ extracted_text|default:'' }}</textarea>
+            </div>
+
+            <button class="import-button import-button--primary" type="submit">
+                Save Expense
+            </button>
+        </form>
+    </section>
+{% endif %}
+
+
+        </section>
+    </main>
+
+    <script src="{% static 'expenses/js/upload_receipt.js' %}?v=upload-receipt-1" defer></script>
+</body>
+</html>

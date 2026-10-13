@@ -1,0 +1,168 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<meta name="description" content="Edit a transaction in the Expense Tracker dashboard.">
+<title>Edit Expense &middot; Expense Tracker</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='88'>&#8377;</text></svg>">
+<link rel="stylesheet" href="{% static 'expenses/css/dashboard.css' %}">
+<script>
+/* Match the dashboard theme before the page is painted. */
+(function () {
+  var root = document.documentElement;
+  var theme = 'dark';
+  try {
+    var saved = localStorage.getItem('et-theme');
+    if (saved === 'light' || saved === 'dark') { theme = saved; }
+    else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) { theme = 'light'; }
+  } catch (e) { /* Keep the dark default if storage is unavailable. */ }
+  root.setAttribute('data-theme', theme);
+})();
+</script>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="M14.5 5.5l-6.5 6.5 6.5 6.5"/></symbol>
+  <symbol id="i-receipt" viewBox="0 0 24 24"><path d="M6 2.5h12v19l-3-1.8-3 1.8-3-1.8-3 1.8zM9.2 7.5h5.6M9.2 11.5h5.6M9.2 15.5h3.4"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.6l4.4 4.4L19 6.8"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l1.6 1.6"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.5 13.7A8.6 8.6 0 0110.3 3.5 8.7 8.7 0 1020.5 13.7z"/></symbol>
+</svg>
+
+<header class="topbar">
+  <a class="btn" href="{% url 'transactions' %}">
+    <svg aria-hidden="true"><use href="#i-left"></use></svg>
+    <span class="btn__label">Back to Dashboard</span>
+  </a>
+
+  <div class="topbar__actions">
+    <button class="icon-btn" id="themeToggle" type="button" aria-label="Switch to light theme" title="Toggle theme">
+      <svg aria-hidden="true" class="icon-sun"><use href="#i-sun"></use></svg>
+      <svg aria-hidden="true" class="icon-moon"><use href="#i-moon"></use></svg>
+    </button>
+  </div>
+</header>
+
+<main class="content" id="main-content">
+  <section class="page-head" aria-labelledby="pageTitle">
+    <div>
+      <h1 id="pageTitle">Edit Expense</h1>
+      <p>Update the details for {{ transaction.merchant }}.</p>
+    </div>
+  </section>
+
+  <section class="panel form-panel" aria-labelledby="formTitle">
+    <div class="panel__head">
+      <div>
+        <h2 class="panel__title" id="formTitle">
+          <svg aria-hidden="true"><use href="#i-receipt"></use></svg>
+          Transaction details
+        </h2>
+        <p class="panel__sub">Update the fields below, then save your changes.</p>
+      </div>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="form-grid">
+        <div class="form-field">
+          <label class="form-label" for="id_date">Date</label>
+          <div class="field">
+            <input type="date" name="date" id="id_date" value="{{ transaction.date|date:'Y-m-d' }}" required>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="id_amount">Amount</label>
+          <div class="field">
+            <input type="number" name="amount" id="id_amount" step="0.01" inputmode="decimal" value="{{ transaction.amount }}" required>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="id_merchant">Merchant</label>
+          <div class="field">
+            <input type="text" name="merchant" id="id_merchant" value="{{ transaction.merchant }}" required>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="id_payment_method">Payment method</label>
+          <div class="field">
+            <select name="payment_method" id="id_payment_method" required>
+              <option value="UPI" {% if transaction.payment_method == "UPI" %}selected{% endif %}>UPI</option>
+              <option value="CREDIT_CARD" {% if transaction.payment_method == "CREDIT_CARD" %}selected{% endif %}>Credit Card</option>
+              <option value="DEBIT_CARD" {% if transaction.payment_method == "DEBIT_CARD" %}selected{% endif %}>Debit Card</option>
+              <option value="BANK_TRANSFER" {% if transaction.payment_method == "BANK_TRANSFER" %}selected{% endif %}>Bank Transfer</option>
+              <option value="CASH" {% if transaction.payment_method == "CASH" %}selected{% endif %}>Cash</option>
+              <option value="OTHER" {% if transaction.payment_method == "OTHER" %}selected{% endif %}>Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="id_category">Category</label>
+          <div class="field">
+            <select name="category" id="id_category" required>
+              <option value="FOOD" {% if transaction.category == "FOOD" %}selected{% endif %}>Food</option>
+              <option value="GROCERIES" {% if transaction.category == "GROCERIES" %}selected{% endif %}>Groceries</option>
+              <option value="SHOPPING" {% if transaction.category == "SHOPPING" %}selected{% endif %}>Shopping</option>
+              <option value="TRAVEL" {% if transaction.category == "TRAVEL" %}selected{% endif %}>Travel</option>
+              <option value="EDUCATION" {% if transaction.category == "EDUCATION" %}selected{% endif %}>Education</option>
+              <option value="BILLS" {% if transaction.category == "BILLS" %}selected{% endif %}>Bills</option>
+              <option value="ENTERTAINMENT" {% if transaction.category == "ENTERTAINMENT" %}selected{% endif %}>Entertainment</option>
+              <option value="HEALTHCARE" {% if transaction.category == "HEALTHCARE" %}selected{% endif %}>Healthcare</option>
+              <option value="SUBSCRIPTIONS" {% if transaction.category == "SUBSCRIPTIONS" %}selected{% endif %}>Subscriptions</option>
+              <option value="OTHER" {% if transaction.category == "OTHER" %}selected{% endif %}>Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="id_description">Description</label>
+          <div class="field">
+            <textarea name="description" id="id_description" rows="3">{{ transaction.description }}</textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn--primary" type="submit">
+          <svg aria-hidden="true"><use href="#i-check"></use></svg>
+          <span class="btn__label">Save Changes</span>
+        </button>
+        <a class="btn btn--secondary" href="{% url 'transactions' %}">Cancel</a>
+      </div>
+    </form>
+  </section>
+</main>
+
+<script>
+/* Reuse the dashboard's saved theme preference without loading dashboard.js. */
+(function () {
+  var root = document.documentElement;
+  var toggle = document.getElementById('themeToggle');
+  if (!toggle) { return; }
+
+  function currentTheme() {
+    return root.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+  }
+  function applyTheme(theme) {
+    root.setAttribute('data-theme', theme);
+    toggle.setAttribute('aria-label', theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+    try { localStorage.setItem('et-theme', theme); } catch (e) { /* Ignore unavailable storage. */ }
+  }
+
+  applyTheme(currentTheme());
+  toggle.addEventListener('click', function () {
+    applyTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,173 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<meta name="description" content="Record a new manual expense in the Expense Tracker dashboard.">
+<title>Add Expense &middot; Expense Tracker</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='88'>&#8377;</text></svg>">
+<link rel="stylesheet" href="{% static 'expenses/css/dashboard.css' %}">
+<script>
+/* Set theme before first paint so there is no flash of the wrong theme.
+   Same bootstrap (and 'et-theme' key) as expenses/transactions.html. */
+(function () {
+  var root = document.documentElement;
+  var theme = 'dark';
+  try {
+    var saved = localStorage.getItem('et-theme');
+    if (saved === 'light' || saved === 'dark') { theme = saved; }
+    else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) { theme = 'light'; }
+  } catch (e) { /* private mode: fall back to dark */ }
+  root.setAttribute('data-theme', theme);
+})();
+</script>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="M14.5 5.5l-6.5 6.5 6.5 6.5"/></symbol>
+  <symbol id="i-receipt" viewBox="0 0 24 24"><path d="M6 2.5h12v19l-3-1.8-3 1.8-3-1.8-3 1.8zM9.2 7.5h5.6M9.2 11.5h5.6M9.2 15.5h3.4"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.6l4.4 4.4L19 6.8"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.5 13.7A8.6 8.6 0 0110.3 3.5 8.7 8.7 0 1020.5 13.7z"/></symbol>
+</svg>
+
+<header class="topbar">
+  <a class="btn" href="{% url 'transactions' %}">
+    <svg aria-hidden="true"><use href="#i-left"></use></svg>
+    <span class="btn__label">Back to Dashboard</span>
+  </a>
+
+  <div class="topbar__actions">
+    <button class="icon-btn" id="themeToggle" type="button" aria-label="Switch to light theme" title="Toggle theme">
+      <svg aria-hidden="true" class="icon-sun"><use href="#i-sun"></use></svg>
+      <svg aria-hidden="true" class="icon-moon"><use href="#i-moon"></use></svg>
+    </button>
+  </div>
+</header>
+
+<main class="content" id="main-content">
+
+  <section class="page-head" aria-labelledby="pageTitle">
+    <div>
+      <h1 id="pageTitle">Add Expense</h1>
+      <p>Record a manual transaction &mdash; it shows up on the dashboard straight away.</p>
+    </div>
+  </section>
+
+  <section class="panel form-panel" aria-labelledby="formTitle">
+    <div class="panel__head">
+      <div>
+        <h2 class="panel__title" id="formTitle">
+          <svg aria-hidden="true"><use href="#i-receipt"></use></svg>
+          Transaction details
+        </h2>
+        <p class="panel__sub">Fields marked as required must be filled in.</p>
+      </div>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="form-grid">
+        <div class="form-field">
+          <label class="form-label" for="id_date">Date</label>
+          <div class="field">
+            <input type="date" name="date" id="id_date" required>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="id_amount">Amount</label>
+          <div class="field">
+            <input type="number" name="amount" id="id_amount" step="0.01" inputmode="decimal" placeholder="0.00" required>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="id_merchant">Merchant</label>
+          <div class="field">
+            <input type="text" name="merchant" id="id_merchant" placeholder="e.g. Corner Coffee" required>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="id_payment_method">Payment method</label>
+          <div class="field">
+            <select name="payment_method" id="id_payment_method" required>
+              <option value="UPI">UPI</option>
+              <option value="CREDIT_CARD">Credit Card</option>
+              <option value="DEBIT_CARD">Debit Card</option>
+              <option value="BANK_TRANSFER">Bank Transfer</option>
+              <option value="CASH">Cash</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="id_category">Category</label>
+          <div class="field">
+            <select name="category" id="id_category" required>
+              <option value="FOOD">Food</option>
+              <option value="GROCERIES">Groceries</option>
+              <option value="SHOPPING">Shopping</option>
+              <option value="TRAVEL">Travel</option>
+              <option value="EDUCATION">Education</option>
+              <option value="BILLS">Bills</option>
+              <option value="ENTERTAINMENT">Entertainment</option>
+              <option value="HEALTHCARE">Healthcare</option>
+              <option value="SUBSCRIPTIONS">Subscriptions</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="id_description">Description</label>
+          <div class="field">
+            <textarea name="description" id="id_description" rows="3" placeholder="Optional note about this expense"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn--primary" type="submit">
+          <svg aria-hidden="true"><use href="#i-check"></use></svg>
+          <span class="btn__label">Add Expense</span>
+        </button>
+        <a class="btn btn--secondary" href="{% url 'transactions' %}">Cancel</a>
+      </div>
+    </form>
+  </section>
+</main>
+
+<script>
+/* Mirrors currentTheme()/applyTheme() in expenses/static/expenses/js/dashboard.js
+   and shares the same 'et-theme' key, so the toggle stays in sync with the
+   dashboard. Kept inline because dashboard.js also boots the whole dashboard. */
+(function () {
+  var root = document.documentElement;
+  var toggle = document.getElementById('themeToggle');
+  if (!toggle) { return; }
+
+  function currentTheme() {
+    return root.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+  }
+  function applyTheme(theme) {
+    root.setAttribute('data-theme', theme);
+    toggle.setAttribute('aria-label', theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+    try { localStorage.setItem('et-theme', theme); } catch (e) { /* ignore */ }
+  }
+
+  applyTheme(currentTheme());
+  toggle.addEventListener('click', function () {
+    applyTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+  });
+})();
+</script>
+
+</body>
+</html>

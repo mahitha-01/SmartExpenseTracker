@@ -129,15 +129,17 @@ OCR results may vary depending on receipt image quality and formatting. Always v
 
 The dashboard provides an overview of spending, including transaction records, spending by category, monthly trends, and payment-method breakdowns.
 
-_Add screenshots of your dashboard and receipt review page here._
+### Dashboard Overview
 
-Example:
+![Expense Tracker Dashboard](screenshots/dashboard.png)
 
-```markdown
-![Expense dashboard](screenshots/dashboard.png)
+### Recent Transactions
 
-![Receipt OCR review](screenshots/receipt-review.png)
-```
+![Recent Transactions](screenshots/transactions.png)
+
+### Receipt OCR
+
+![Receipt OCR Review](screenshots/ocr.png)
 
 ## 🎯 Project Goals
 
